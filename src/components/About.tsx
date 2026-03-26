@@ -22,13 +22,13 @@ export function About() {
         </div>
 
         <div className="space-y-5 text-base leading-8 text-slate-700 sm:text-lg">
-          <p>
+          <p className="font-medium text-slate-800">
             The Greater Gaming Society of San Antonio exists to bring together
             the people who make, play, study, and support games in South Texas.
             It is designed to be approachable for newcomers and useful for
             long-time community members.
           </p>
-          <p>
+          <p className="font-medium text-slate-800">
             The group&apos;s role is practical: help people meet each other,
             stay connected, share opportunities, and create a healthier local
             environment for game development and game culture.
@@ -40,9 +40,12 @@ export function About() {
         {highlights.map((highlight) => (
           <article
             key={highlight}
-            className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm"
+            className="group rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_20px_42px_rgba(15,23,42,0.06)] transition duration-300 hover:-translate-y-1 hover:border-slate-950"
           >
-            <p className="text-base leading-7 text-slate-700">{highlight}</p>
+            <div className="mb-4 h-2 w-16 rounded-full bg-gradient-to-r from-emerald-400 via-amber-300 to-fuchsia-300 transition duration-300 group-hover:w-24" />
+            <p className="text-base leading-7 font-medium text-slate-800">
+              {highlight}
+            </p>
           </article>
         ))}
       </div>

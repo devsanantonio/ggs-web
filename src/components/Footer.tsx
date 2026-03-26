@@ -1,4 +1,7 @@
+import Image from "next/image";
+
 const footerLinks = [
+  { href: "#community", label: "Community" },
   { href: "#about", label: "About" },
   { href: "#events", label: "Events" },
   { href: "#contact", label: "Connect" },
@@ -9,12 +12,26 @@ export function Footer() {
     <footer className="border-t border-black/5 bg-slate-950 text-slate-200">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-10 sm:px-10 lg:flex-row lg:items-end lg:justify-between lg:px-12">
         <div className="max-w-xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-400">
-            Greater Gaming Society
-          </p>
-          <p className="mt-4 text-sm leading-7 text-slate-300">
+          <div className="flex items-center gap-4">
+            <Image
+              src="/reference/ggs-logo-white.png"
+              alt="Greater Gaming Society"
+              width={280}
+              height={128}
+              className="h-auto w-28"
+            />
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-200">
+                San Antonio, Texas
+              </p>
+              <p className="mt-2 text-sm font-semibold tracking-[0.08em] text-white">
+                Greater Gaming Society
+              </p>
+            </div>
+          </div>
+          <p className="mt-5 text-sm leading-7 font-medium text-slate-300">
             Support, collaboration, and connection for developers, gamers, and
-            enthusiasts in San Antonio and across Texas.
+            enthusiasts based in San Antonio, Texas.
           </p>
         </div>
         <nav aria-label="Footer" className="flex flex-wrap gap-4 text-sm">
@@ -22,7 +39,7 @@ export function Footer() {
             <a
               key={link.href}
               href={link.href}
-              className="text-slate-300 transition hover:text-white"
+              className="font-semibold text-slate-300 transition hover:text-white"
             >
               {link.label}
             </a>

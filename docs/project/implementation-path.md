@@ -122,14 +122,35 @@ Exit criteria:
 
 Goal:
 
-Tighten the copy and basic site metadata so the project is a credible baseline for future expansion.
+Tighten the copy, accessibility, metadata, and media handling so the project is a credible baseline for future expansion.
 
 Build tasks:
 
 - replace weak placeholder phrasing with stronger organization-specific messaging
 - verify social/community links and CTA destinations
-- add basic metadata such as title and description
+- improve readability with an accessibility-focused pass on:
+  - font weight
+  - contrast
+  - focus states
+  - link/button clarity
+  - mobile menu usability
+- review the page for likely WCAG and Lighthouse issues before calling the public site ready
+- expand metadata and SEO coverage, including:
+  - title and description
+  - Open Graph basics
+  - social sharing image strategy
+  - stronger alt text where needed
+- optimize image usage by:
+  - preferring real event/community photos over social-platform screenshots
+  - using `priority` only where it materially helps above-the-fold content
+  - adding responsive `sizes` where appropriate
+  - reducing oversized images used in small surfaces
+  - keeping non-critical images lazy-loaded
 - ensure the page structure is stable enough for future additions
+
+Explicit non-goal for this phase:
+
+- do not add dark mode unless it becomes a real product requirement with time to design and test it properly
 
 MCP callouts:
 
@@ -141,7 +162,10 @@ Exit criteria:
 
 - copy matches the organization references
 - metadata is present
+- major readability issues are addressed
+- image usage is intentionally optimized instead of relying on oversized originals everywhere
 - external links and CTA targets are coherent
+- no obvious accessibility regressions remain in core navigation and content sections
 
 ## Frontend implementation breakdown
 

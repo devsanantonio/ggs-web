@@ -514,6 +514,8 @@ The setup is successful when all of this is true:
 - the website includes hero, about, events, and contact/community sections
 - event content is structured for future extensibility
 - Biome is the default lint + format tool in the workflow
+- accessibility and readability have received a deliberate pass
+- metadata and core image handling are in place for SEO and performance
 
 ---
 
@@ -530,6 +532,8 @@ The important mental model is:
 So yes, this is meant to be a real website project, even if it starts small and static-first.
 
 For the execution sequence and MCP callouts during implementation, use [implementation-path.md](/Users/zaq/Documents/projects/working/ggs-web/docs/project/implementation-path.md) alongside this spec.
+
+For now, dark mode is optional and should not be added unless there is a deliberate product decision to support and maintain both themes well.
 
 ---
 
