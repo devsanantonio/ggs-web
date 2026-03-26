@@ -4,7 +4,7 @@ const slides = [
   {
     src: "/reference/community-pictures/ggs-geekdom-ribbon.jpg",
     alt: "Greater Gaming Society ribbon-cutting photo at Geekdom",
-    label: "Gaming Summit Kickoff",
+    label: "SASW Gaming Summit",
   },
   {
     src: "/reference/community-pictures/ggs-meetup2.jpg",
@@ -14,7 +14,7 @@ const slides = [
   {
     src: "/reference/community-pictures/ggj25-presentations.jpg",
     alt: "Global Game Jam presentation photo",
-    label: "Global Game Jam 2025",
+    label: "Global Game Jam",
   },
   {
     src: "/reference/community-pictures/ggs-geekdom-panel.jpg",
@@ -39,7 +39,7 @@ export function CommunityReel() {
   return (
     <section
       id="community"
-      className="overflow-hidden border-y border-black/5 bg-slate-950 py-24 text-white"
+      className="overflow-hidden scroll-mt-16 border-y border-black/5 bg-slate-950 py-24 text-white"
     >
       <div className="mx-auto w-full max-w-6xl px-6 sm:px-10 lg:px-12">
         <div className="max-w-3xl">
@@ -72,6 +72,7 @@ export function CommunityReel() {
                     width={1152}
                     height={768}
                     className="h-64 w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                    sizes="(min-width: 640px) 20rem, 18rem"
                   />
                 </div>
                 <p className="px-2 pb-2 pt-4 text-sm font-semibold uppercase tracking-[0.2em] text-amber-200">

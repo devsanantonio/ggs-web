@@ -23,29 +23,18 @@ export function Hero() {
             creatives, students, and supporters through meetups, networking, and
             a shared commitment to growing the regional game community.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-800">
-            <span className="rounded-full border border-slate-300 bg-white/70 px-4 py-2">
-              Monthly meetups
-            </span>
-            <span className="rounded-full border border-slate-300 bg-white/70 px-4 py-2">
-              Local creators
-            </span>
-            <span className="rounded-full border border-slate-300 bg-white/70 px-4 py-2">
-              Community energy
-            </span>
-          </div>
           <div className="mt-10 flex flex-wrap gap-3 text-sm font-medium">
             <a
               href="https://www.meetup.com/greater-gaming-society-of-san-antonio/"
               target="_blank"
               rel="noreferrer"
-              className="rounded-full bg-slate-950 px-6 py-3 text-white shadow-[0_16px_35px_rgba(15,23,42,0.22)] transition hover:-translate-y-0.5 hover:bg-slate-800"
+              className="rounded-full bg-slate-950 px-6 py-3 text-white shadow-[0_16px_35px_rgba(15,23,42,0.22)] transition hover:-translate-y-0.5 hover:bg-slate-800 focus-visible:bg-slate-800"
             >
               Join on Meetup
             </a>
             <a
               href="#community"
-              className="rounded-full border border-slate-300 bg-white/85 px-6 py-3 text-slate-900 transition hover:-translate-y-0.5 hover:border-slate-950"
+              className="rounded-full border border-slate-300 bg-white/85 px-6 py-3 text-slate-900 transition hover:-translate-y-0.5 hover:border-slate-950 focus-visible:border-slate-950 focus-visible:bg-white"
             >
               Explore the community
             </a>
@@ -56,7 +45,7 @@ export function Hero() {
           <div className="absolute left-0 top-16 hidden h-32 w-32 rounded-full border border-white/50 bg-white/60 blur-sm lg:block" />
           <div className="absolute right-2 top-0 z-20 w-[84%] overflow-hidden rounded-[2rem] border border-white/70 bg-slate-950 p-4 text-white shadow-[0_30px_80px_rgba(15,23,42,0.20)] md:w-[78%]">
             <div className="absolute right-4 top-4 rounded-full bg-white/10 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-amber-200">
-              Spotlight
+              Meet • Share • Build
             </div>
             <div className="rounded-[1.45rem] border border-white/10 bg-white/4 p-3">
               <Image
@@ -66,6 +55,7 @@ export function Hero() {
                 height={768}
                 className="h-56 w-full rounded-[1.1rem] object-cover sm:h-64"
                 priority
+                sizes="(min-width: 1024px) 32vw, 84vw"
               />
             </div>
             <div className="mt-5 flex items-end justify-between gap-4">
@@ -74,8 +64,9 @@ export function Hero() {
                   Community-first
                 </p>
                 <p className="mt-2 text-base leading-7 text-slate-200">
-                  Real events, familiar faces, and visible momentum for the game
-                  community in San Antonio.
+                  Real events, familiar faces, and visible momentum around
+                  meetups, programming, Startup Week, and local game
+                  development culture.
                 </p>
               </div>
             </div>
@@ -87,10 +78,8 @@ export function Hero() {
               width={768}
               height={768}
               className="h-48 w-full rounded-[1.1rem] object-cover"
+              sizes="(min-width: 1024px) 22vw, 55vw"
             />
-          </div>
-          <div className="absolute bottom-6 right-0 z-30 hidden rounded-full border border-amber-300/50 bg-amber-200/80 px-4 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.24em] text-slate-900 shadow-[0_12px_30px_rgba(251,191,36,0.28)] sm:block">
-            Meet • Share • Build
           </div>
         </div>
       </div>

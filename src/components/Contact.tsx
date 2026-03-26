@@ -20,7 +20,7 @@ export function Contact() {
   return (
     <section
       id="contact"
-      className="mx-auto w-full max-w-6xl px-6 py-24 sm:px-10 lg:px-12"
+      className="mx-auto w-full max-w-6xl scroll-mt-16 px-6 py-24 sm:px-10 lg:px-12"
     >
       <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="max-w-xl">
@@ -44,7 +44,7 @@ export function Contact() {
               href={link.href}
               target="_blank"
               rel="noreferrer"
-              className="group rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.06)] transition duration-300 hover:-translate-y-1 hover:border-slate-950 hover:shadow-[0_24px_55px_rgba(15,23,42,0.11)]"
+              className="group rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.06)] transition duration-300 hover:-translate-y-1 hover:border-slate-950 hover:shadow-[0_24px_55px_rgba(15,23,42,0.11)] focus-visible:border-slate-950 focus-visible:shadow-[0_24px_55px_rgba(15,23,42,0.11)]"
             >
               <div className="flex items-center justify-between gap-4">
                 <div>

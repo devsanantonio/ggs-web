@@ -31,7 +31,7 @@ export function Header() {
               width={280}
               height={128}
               className="h-auto w-28 transition duration-300 group-hover:scale-[1.03] sm:w-32"
-              priority
+              sizes="(min-width: 640px) 8rem, 7rem"
             />
           </div>
           <div className="hidden sm:block">
@@ -52,7 +52,7 @@ export function Header() {
             <a
               key={item.href}
               href={item.href}
-              className="rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap text-slate-100 transition hover:bg-gradient-to-r hover:from-emerald-400 hover:to-amber-300 hover:text-slate-950"
+              className="rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap text-slate-100 transition hover:bg-gradient-to-r hover:from-emerald-400 hover:to-amber-300 hover:text-slate-950 focus-visible:bg-white focus-visible:text-slate-950"
             >
               {item.label}
             </a>
@@ -82,7 +82,7 @@ export function Header() {
               key={item.href}
               href={item.href}
               onClick={closeMenu}
-              className="rounded-2xl px-4 py-4 text-base font-semibold text-slate-100 transition hover:bg-white/8"
+              className="rounded-2xl px-4 py-4 text-base font-semibold text-slate-100 transition hover:bg-white/8 focus-visible:bg-white focus-visible:text-slate-950"
             >
               {item.label}
             </a>

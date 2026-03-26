@@ -1,14 +1,14 @@
 const highlights = [
   "Support and collaboration for the local game industry and broader enthusiast community.",
   "A welcoming space for indie developers, gamers, students, musicians, and other creatives.",
-  "A consistent San Antonio hub for networking, conversation, and community growth.",
+  "A consistent San Antonio hub for networking, conversation, and community growth through meetups, Geekdom programming, Startup Week moments, and game-jam culture.",
 ];
 
 export function About() {
   return (
     <section
       id="about"
-      className="mx-auto w-full max-w-6xl px-6 py-24 sm:px-10 lg:px-12"
+      className="mx-auto w-full max-w-6xl scroll-mt-16 px-6 py-24 sm:px-10 lg:px-12"
     >
       <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
         <div className="max-w-xl">
@@ -31,7 +31,9 @@ export function About() {
           <p className="font-medium text-slate-800">
             The group&apos;s role is practical: help people meet each other,
             stay connected, share opportunities, and create a healthier local
-            environment for game development and game culture.
+            environment for game development and game culture, with visible ties
+            to local spaces and programs such as Geekdom, Startup Week, and
+            Global Game Jam.
           </p>
         </div>
       </div>

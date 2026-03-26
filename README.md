@@ -29,6 +29,14 @@ npm run format
 
 Open [http://localhost:3000](http://localhost:3000) to view the app.
 
+Optional environment variable for metadata:
+
+```bash
+NEXT_PUBLIC_SITE_URL=https://your-production-domain.example
+```
+
+If `NEXT_PUBLIC_SITE_URL` is not set, metadata falls back to `http://localhost:3000`.
+
 ## Project docs
 
 - [Docs index](/Users/zaq/Documents/projects/working/ggs-web/docs/README.md)

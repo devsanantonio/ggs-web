@@ -14,7 +14,7 @@ export function Events({ events }: EventsProps) {
   return (
     <section
       id="events"
-      className="relative border-y border-black/5 bg-[linear-gradient(180deg,#fffdf7_0%,#f5fbf6_100%)]"
+      className="relative scroll-mt-16 border-y border-black/5 bg-[linear-gradient(180deg,#fffdf7_0%,#f5fbf6_100%)]"
     >
       <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[linear-gradient(180deg,rgba(255,255,255,0.7),transparent)]" />
       <div className="mx-auto w-full max-w-6xl px-6 py-24 sm:px-10 lg:px-12">
@@ -27,7 +27,9 @@ export function Events({ events }: EventsProps) {
           </h2>
           <p className="mt-6 text-lg leading-8 font-medium text-slate-800">
             Event content is structured from day one so the public site can grow
-            into a future admin-managed workflow without rewriting the section.
+            into a future admin-managed workflow without rewriting the section,
+            while still reflecting the real cadence of meetups, showcases, and
+            local event partnerships.
           </p>
         </div>
 
@@ -62,7 +64,7 @@ export function Events({ events }: EventsProps) {
                 href={event.externalUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-8 inline-flex w-fit rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-900 transition group-hover:border-slate-950 group-hover:bg-slate-950 group-hover:text-white"
+                className="mt-8 inline-flex w-fit rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-900 transition group-hover:border-slate-950 group-hover:bg-slate-950 group-hover:text-white focus-visible:border-slate-950 focus-visible:bg-slate-950 focus-visible:text-white"
               >
                 Event details
               </a>
