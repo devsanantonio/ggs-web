@@ -5,6 +5,7 @@ https://www.instagram.com/greatergamingsociety/
 https://www.meetup.com/greater-gaming-society-of-san-antonio/
 https://www.reddit.com/r/sanantonio/comments/1e51rag/what_is_the_greater_gaming_society/ - don't take this one as seriously...
 https://www.facebook.com/groups/ggssa/
+https://www.facebook.com/greatergamingsociety
 
 ## Descriptions
 
