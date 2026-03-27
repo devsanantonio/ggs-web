@@ -31,9 +31,8 @@ export function Footer() {
             </div>
           </div>
           <p className="mt-5 text-sm leading-7 font-medium text-slate-300">
-            Support, collaboration, and connection for developers, gamers, and
-            enthusiasts based in San Antonio, Texas, with ties to meetups,
-            showcases, and local game-community programming.
+            Support, collaboration, and connection for game developers, gamers,
+            and enthusiasts based in San Antonio, Texas.
           </p>
         </div>
         <nav aria-label="Footer" className="flex flex-wrap gap-4 text-sm">

@@ -1,7 +1,7 @@
 const highlights = [
-  "Support and collaboration for the local game industry and broader enthusiast community.",
-  "A welcoming space for indie developers, gamers, students, musicians, and other creatives.",
-  "A consistent San Antonio hub for networking, conversation, and community growth through meetups, Geekdom programming, Startup Week moments, and game-jam culture.",
+  "Support for game developers and gamers across San Antonio and Texas.",
+  "A place to collaborate, stay connected, and hear about opportunities.",
+  "Monthly meetings and networking that help grow the local game industry.",
 ];
 
 export function About() {
@@ -16,24 +16,20 @@ export function About() {
             About the organization
           </p>
           <h2 className="mt-5 text-4xl font-semibold tracking-tight text-balance text-slate-950 sm:text-5xl">
-            A local community built on connection, collaboration, and shared
-            curiosity.
+            Support, collaboration, and connection for the local game community.
           </h2>
         </div>
 
         <div className="space-y-5 text-base leading-8 text-slate-700 sm:text-lg">
           <p className="font-medium text-slate-800">
-            The Greater Gaming Society of San Antonio exists to bring together
-            the people who make, play, study, and support games in South Texas.
-            It is designed to be approachable for newcomers and useful for
-            long-time community members.
+            We are the Greater Gaming Society of San Antonio. The group brings
+            together indie developers, gamers, creatives, students, musicians,
+            and enthusiasts from across San Antonio and Texas.
           </p>
           <p className="font-medium text-slate-800">
-            The group&apos;s role is practical: help people meet each other,
-            stay connected, share opportunities, and create a healthier local
-            environment for game development and game culture, with visible ties
-            to local spaces and programs such as Geekdom, Startup Week, and
-            Global Game Jam.
+            The goal is simple: provide support, collaboration, and connection
+            through monthly meetings, networking, and anything that helps grow
+            the local game industry.
           </p>
         </div>
       </div>

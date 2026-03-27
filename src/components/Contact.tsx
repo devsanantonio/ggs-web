@@ -28,12 +28,12 @@ export function Contact() {
             Connect with the community
           </p>
           <h2 className="mt-5 text-4xl font-semibold tracking-tight text-balance text-slate-950 sm:text-5xl">
-            Find the channel that works best for how you like to show up.
+            The main places to stay in touch with GGS.
           </h2>
           <p className="mt-6 text-lg leading-8 font-medium text-slate-800">
-            Whether you&apos;re looking to attend a meetup, meet local
-            developers, or stay connected to the community between events, these
-            are the primary places to start.
+            Use these channels to follow meetups, hear about upcoming events,
+            and stay connected to the people building and supporting the local
+            game scene.
           </p>
         </div>
 

@@ -44,15 +44,15 @@ export function CommunityReel() {
       <div className="mx-auto w-full max-w-6xl px-6 sm:px-10 lg:px-12">
         <div className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-300">
-            Community reel
+            Greater Gaming Society in motion
           </p>
           <h2 className="mt-5 text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
-            The energy should feel like people actually show up here.
+            Meetups, game jams, talks, and community moments from San Antonio.
           </h2>
           <p className="mt-6 text-lg leading-8 font-medium text-slate-200">
-            Use the actual event photography to show the organization as it
-            exists: meetups, presentations, Geekdom programming, Global Game Jam
-            energy, and people spending time together in the space.
+            A look at the people, projects, and gatherings behind the group:
+            monthly meetups, Global Game Jam, Startup Week, and the wider local
+            game community.
           </p>
         </div>
       </div>

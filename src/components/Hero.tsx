@@ -13,15 +13,15 @@ export function Hero() {
       <div className="mx-auto grid w-full max-w-6xl gap-14 px-5 py-20 sm:px-10 lg:grid-cols-[1.02fr_0.98fr] lg:px-12 lg:py-28">
         <div className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-800">
-            Community for developers and enthusiasts
+            San Antonio game community
           </p>
           <h1 className="mt-6 text-5xl font-semibold tracking-tight text-balance text-slate-950 sm:text-6xl lg:text-7xl">
-            San Antonio&apos;s gathering place for people who care about games.
+            Greater Gaming Society of San Antonio
           </h1>
           <p className="mt-7 max-w-2xl text-lg leading-8 font-medium text-slate-800 sm:text-xl">
-            The Greater Gaming Society connects local game developers, gamers,
-            creatives, students, and supporters through meetups, networking, and
-            a shared commitment to growing the regional game community.
+            A community group of indie developers, gamers, creatives, students,
+            musicians, and other talented video game lovers in San Antonio,
+            Texas.
           </p>
           <div className="mt-10 flex flex-wrap gap-3 text-sm font-medium">
             <a
@@ -64,9 +64,8 @@ export function Hero() {
                   Community-first
                 </p>
                 <p className="mt-2 text-base leading-7 text-slate-200">
-                  Real events, familiar faces, and visible momentum around
-                  meetups, programming, Startup Week, and local game
-                  development culture.
+                  Monthly meetings, networking, and anything that helps grow the
+                  local game industry and the people around it.
                 </p>
               </div>
             </div>

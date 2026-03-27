@@ -23,13 +23,12 @@ export function Events({ events }: EventsProps) {
             Events
           </p>
           <h2 className="mt-5 text-4xl font-semibold tracking-tight text-balance text-slate-950 sm:text-5xl">
-            Regular opportunities to meet, share work, and stay plugged in.
+            Monthly meetings, networking, and community events.
           </h2>
           <p className="mt-6 text-lg leading-8 font-medium text-slate-800">
-            Event content is structured from day one so the public site can grow
-            into a future admin-managed workflow without rewriting the section,
-            while still reflecting the real cadence of meetups, showcases, and
-            local event partnerships.
+            This is where the group shows up: regular meetups, special events,
+            and community gatherings that keep San Antonio game developers and
+            enthusiasts in the loop.
           </p>
         </div>
 
