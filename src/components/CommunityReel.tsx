@@ -1,41 +1,15 @@
+"use client";
+
 import Image from "next/image";
 
-const slides = [
-  {
-    src: "/reference/community-pictures/ggs-geekdom-ribbon.jpg",
-    alt: "Greater Gaming Society ribbon-cutting photo at Geekdom",
-    label: "SASW Gaming Summit",
-  },
-  {
-    src: "/reference/community-pictures/ggs-meetup2.jpg",
-    alt: "Greater Gaming Society meetup photo",
-    label: "Community meetup",
-  },
-  {
-    src: "/reference/community-pictures/ggj25-presentations.jpg",
-    alt: "Global Game Jam presentation photo",
-    label: "Global Game Jam",
-  },
-  {
-    src: "/reference/community-pictures/ggs-geekdom-panel.jpg",
-    alt: "Greater Gaming Society panel at Geekdom",
-    label: "Panels and talks",
-  },
-  {
-    src: "/reference/community-pictures/ggs-geekdom-people.jpg",
-    alt: "Greater Gaming Society attendees at Geekdom",
-    label: "People and projects",
-  },
-  {
-    src: "/reference/community-pictures/ggs-geekdom-crowd.jpg",
-    alt: "Greater Gaming Society crowd at an event",
-    label: "Community energy",
-  },
-];
-
-const reel = [...slides, ...slides];
+import { getDailyCommunitySelection } from "@/content/communityImages";
+import { useDailyRotationKey } from "@/lib/dailyRotation";
 
 export function CommunityReel() {
+  const dayKey = useDailyRotationKey();
+  const { reelSlides: slides } = getDailyCommunitySelection(dayKey);
+  const reel = [...slides, ...slides];
+
   return (
     <section
       id="community"

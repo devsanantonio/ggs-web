@@ -1,6 +1,14 @@
+"use client";
+
 import Image from "next/image";
 
+import { getDailyCommunitySelection } from "@/content/communityImages";
+import { useDailyRotationKey } from "@/lib/dailyRotation";
+
 export function Hero() {
+  const dayKey = useDailyRotationKey();
+  const { heroSpotlight: spotlightImage } = getDailyCommunitySelection(dayKey);
+
   return (
     <section
       id="top"
@@ -49,8 +57,8 @@ export function Hero() {
             </div>
             <div className="rounded-[1.45rem] border border-white/10 bg-white/4 p-3">
               <Image
-                src="/reference/community-pictures/ggs-geekdom-ribbon.jpg"
-                alt="Greater Gaming Society ribbon-cutting event at Geekdom"
+                src={spotlightImage.src}
+                alt={spotlightImage.alt}
                 width={1152}
                 height={768}
                 className="h-56 w-full rounded-[1.1rem] object-cover sm:h-64"
@@ -73,7 +81,7 @@ export function Hero() {
           <div className="absolute bottom-0 left-0 z-10 w-[66%] rotate-[-5deg] overflow-hidden rounded-[1.8rem] border border-white/60 bg-white/75 p-3 shadow-[0_26px_70px_rgba(15,23,42,0.12)]">
             <Image
               src="/reference/community-pictures/ggs-meetup2.jpg"
-              alt="Greater Gaming Society meetup community photo"
+              alt="Greater Gaming Society meetup banner photo"
               width={768}
               height={768}
               className="h-48 w-full rounded-[1.1rem] object-cover"
