@@ -7,7 +7,6 @@ import { Events } from "@/components/Events";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
-import { events } from "@/content/events";
 
 export default function Home() {
   return (
@@ -21,7 +20,7 @@ export default function Home() {
           <CommunityReel />
         </Suspense>
         <About />
-        <Events events={events} />
+        <Events />
         <Contact />
       </main>
       <Footer />
