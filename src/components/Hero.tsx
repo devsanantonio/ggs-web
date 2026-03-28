@@ -59,6 +59,8 @@ export function Hero() {
               <Image
                 src={spotlightImage.src}
                 alt={spotlightImage.alt}
+                data-testid="hero-spotlight-image"
+                data-rotation-day={dayKey}
                 width={1152}
                 height={768}
                 className="h-56 w-full rounded-[1.1rem] object-cover sm:h-64"
@@ -82,6 +84,7 @@ export function Hero() {
             <Image
               src="/reference/community-pictures/ggs-meetup2.jpg"
               alt="Greater Gaming Society meetup banner photo"
+              data-testid="hero-support-image"
               width={768}
               height={768}
               className="h-48 w-full rounded-[1.1rem] object-cover"

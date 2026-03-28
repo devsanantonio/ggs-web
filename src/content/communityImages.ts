@@ -19,13 +19,20 @@ function hashString(value: string) {
   return Math.abs(hash);
 }
 
+function getDayOffset(dayKey: string) {
+  const [year, month, day] = dayKey.split("-").map(Number);
+  const utcTime = Date.UTC(year, month - 1, day);
+
+  return Math.floor(utcTime / (24 * 60 * 60 * 1000));
+}
+
 function pickUniqueVariant(
   items: CommunityImage[],
   dayKey: string,
   salt: string,
   usedSources: Set<string>,
 ) {
-  const startIndex = hashString(`${dayKey}:${salt}`) % items.length;
+  const startIndex = (getDayOffset(dayKey) + hashString(salt)) % items.length;
 
   for (let offset = 0; offset < items.length; offset += 1) {
     const candidate = items[(startIndex + offset) % items.length];
@@ -49,16 +56,28 @@ export const heroSpotlightImages: CommunityImage[] = [
     alt: "Greater Gaming Society ribbon-cutting event at Geekdom",
   },
   {
+    src: "/reference/community-pictures/ggj25-host.jpg",
+    alt: "Greater Gaming Society host speaking to an audience",
+  },
+  {
     src: "/reference/community-pictures/ggs-geekdom-stage-panel.jpg",
     alt: "Greater Gaming Society speakers on stage at a San Antonio event",
   },
   {
-    src: "/reference/community-pictures/ggs-geekdom-host.jpg",
-    alt: "Greater Gaming Society host speaking to an audience",
-  },
-  {
     src: "/reference/community-pictures/ggj25-host.jpg",
     alt: "Global Game Jam host addressing attendees in San Antonio",
+  },
+  {
+    src: "/reference/community-pictures/ggj-game-couple.jpg",
+    alt: "Golbal Game Jam presenting to the crowd",
+  },
+  {
+    src: "/reference/community-pictures/ggs-geekdom-participants.jpg",
+    alt: "SASW gaming summit participants gathered at Geekdom",
+  },
+  {
+    src: "/reference/community-pictures/ggs-tabling.jpg",
+    alt: "Greater Gaming Society tabling at a event",
   },
 ];
 
@@ -69,10 +88,6 @@ export const communityImageGroups: CommunityImageGroup[] = [
       {
         src: "/reference/community-pictures/ggs-geekdom-ribbon.jpg",
         alt: "Greater Gaming Society ribbon-cutting photo at Geekdom",
-      },
-      {
-        src: "/reference/community-pictures/ggs-geekdom-host.jpg",
-        alt: "Greater Gaming Society speaker at the Gaming Summit",
       },
       {
         src: "/reference/community-pictures/ggs-geekdom-stage-panel.jpg",
@@ -103,6 +118,10 @@ export const communityImageGroups: CommunityImageGroup[] = [
         src: "/reference/community-pictures/ggs-meetup4.jpg",
         alt: "Greater Gaming Society meetup event photo",
       },
+      {
+        src: "/reference/community-pictures/tournament-crowd.jpg",
+        alt: "Greater Gaming Society crowd at a tournament event in San Antonio",
+      },
     ],
   },
   {
@@ -123,6 +142,18 @@ export const communityImageGroups: CommunityImageGroup[] = [
       {
         src: "/reference/community-pictures/ggj25-team.jpg",
         alt: "Global Game Jam team photo with San Antonio participants",
+      },
+      {
+        src: "/reference/community-pictures/ggj25-builder.jpg",
+        alt: "Global Game Jam builder working on a project",
+      },
+      {
+        src: "/reference/community-pictures/ggj-game-host.jpg",
+        alt: "Global Game Jam host speaking to attendees",
+      },
+      {
+        src: "/reference/community-pictures/ggj-game-host.jpg",
+        alt: "Global Game Jam host speaking to attendees",
       },
     ],
   },

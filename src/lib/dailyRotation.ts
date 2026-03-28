@@ -1,11 +1,7 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-
-type Rotatable = {
-  src: string;
-  alt: string;
-};
 
 function getDayKey(date: Date) {
   return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
@@ -30,10 +26,35 @@ function getMillisecondsUntilTomorrow(date: Date) {
   return tomorrow.getTime() - date.getTime();
 }
 
+function normalizeDayOverride(dayOverride: string | null) {
+  const trimmedValue = dayOverride?.trim();
+
+  if (!trimmedValue) {
+    return null;
+  }
+
+  if (!/^\d{4}-\d{1,2}-\d{1,2}$/.test(trimmedValue)) {
+    return null;
+  }
+
+  const [year, month, day] = trimmedValue.split("-").map(Number);
+
+  return `${year}-${month}-${day}`;
+}
+
 export function useDailyRotationKey() {
-  const [dayKey, setDayKey] = useState(() => getDayKey(new Date()));
+  const searchParams = useSearchParams();
+  const dayOverride = normalizeDayOverride(searchParams.get("day"));
+  const [dayKey, setDayKey] = useState(() => {
+    return dayOverride ?? getDayKey(new Date());
+  });
 
   useEffect(() => {
+    if (dayOverride) {
+      setDayKey(dayOverride);
+      return;
+    }
+
     let intervalId: number | undefined;
 
     const syncDayKey = () => {
@@ -52,17 +73,7 @@ export function useDailyRotationKey() {
         window.clearInterval(intervalId);
       }
     };
-  }, []);
+  }, [dayOverride]);
 
   return dayKey;
-}
-
-export function pickDailyVariant<T extends Rotatable>(
-  items: T[],
-  dayKey: string,
-  salt: string,
-) {
-  const rotationIndex = hashString(`${dayKey}:${salt}`) % items.length;
-
-  return items[rotationIndex];
 }

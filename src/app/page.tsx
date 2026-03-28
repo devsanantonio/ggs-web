@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+
 import { About } from "@/components/About";
 import { CommunityReel } from "@/components/CommunityReel";
 import { Contact } from "@/components/Contact";
@@ -12,8 +14,12 @@ export default function Home() {
     <>
       <Header />
       <main className="flex min-h-screen flex-col bg-[linear-gradient(180deg,#f7f0e4_0%,#f4f6f0_48%,#faf9f5_100%)] text-slate-950">
-        <Hero />
-        <CommunityReel />
+        <Suspense fallback={null}>
+          <Hero />
+        </Suspense>
+        <Suspense fallback={null}>
+          <CommunityReel />
+        </Suspense>
         <About />
         <Events events={events} />
         <Contact />

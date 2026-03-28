@@ -13,6 +13,7 @@ export function CommunityReel() {
   return (
     <section
       id="community"
+      data-rotation-day={dayKey}
       className="overflow-hidden scroll-mt-16 border-y border-black/5 bg-slate-950 py-24 text-white"
     >
       <div className="mx-auto w-full max-w-6xl px-6 sm:px-10 lg:px-12">
@@ -37,12 +38,15 @@ export function CommunityReel() {
             {reel.map((slide, index) => (
               <article
                 key={`${slide.src}-${index}`}
+                data-testid="community-reel-card"
+                data-rotation-index={index}
                 className="group min-w-[18rem] max-w-[18rem] overflow-hidden rounded-[2rem] border border-white/10 bg-white/6 p-3 shadow-[0_24px_60px_rgba(0,0,0,0.25)] backdrop-blur-sm transition hover:-translate-y-1 sm:min-w-[20rem] sm:max-w-[20rem]"
               >
                 <div className="overflow-hidden rounded-[1.4rem]">
                   <Image
                     src={slide.src}
                     alt={slide.alt}
+                    data-testid="community-reel-image"
                     width={1152}
                     height={768}
                     className="h-64 w-full object-cover transition duration-500 group-hover:scale-[1.03]"
