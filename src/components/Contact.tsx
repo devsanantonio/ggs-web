@@ -1,13 +1,18 @@
 const communityLinks = [
   {
-    href: "https://www.instagram.com/greatergamingsociety/",
-    label: "Instagram",
-    description: "Follow community updates and highlights.",
+    href: "https://discord.gg/cvHHzThrEw",
+    label: "Discord",
+    description: "Jump into the main chat and keep up with the community.",
   },
   {
     href: "https://www.meetup.com/greater-gaming-society-of-san-antonio/",
     label: "Meetup",
     description: "Track local meetups and upcoming gatherings.",
+  },
+  {
+    href: "https://www.instagram.com/greatergamingsociety/",
+    label: "Instagram",
+    description: "Follow community updates and highlights.",
   },
   {
     href: "https://www.facebook.com/greatergamingsociety",
