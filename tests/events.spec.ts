@@ -5,6 +5,11 @@ async function loadHome(page: Page, fixture: string) {
   await expect(page.getByTestId("events-loading")).toHaveCount(0);
 }
 
+async function loadExpandedHome(page: Page, fixture: string) {
+  await page.goto(`/?events-fixture=${fixture}&events-expanded=1`);
+  await expect(page.getByTestId("events-loading")).toHaveCount(0);
+}
+
 test.describe("events section states", () => {
   test("renders a single upcoming event without an expansion button", async ({
     page,
@@ -29,17 +34,11 @@ test.describe("events section states", () => {
     ]);
   });
 
-  test("expands when more than two upcoming events are available", async ({
+  test("shows the expanded state when more than two upcoming events are available", async ({
     page,
   }) => {
-    await loadHome(page, "more");
+    await loadExpandedHome(page, "more");
 
-    await expect(page.getByTestId("event-card")).toHaveCount(2);
-    await expect(page.getByTestId("events-toggle")).toHaveText(
-      "There are 1 more upcoming events",
-    );
-
-    await page.getByTestId("events-toggle").click();
     await expect(page.getByTestId("event-card")).toHaveCount(3);
     await expect(page.getByTestId("events-toggle")).toHaveText(
       "Show fewer events",

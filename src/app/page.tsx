@@ -20,7 +20,9 @@ export default function Home() {
           <CommunityReel />
         </Suspense>
         <About />
-        <Events />
+        <Suspense fallback={null}>
+          <Events />
+        </Suspense>
         <Contact />
       </main>
       <Footer />

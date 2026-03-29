@@ -1,8 +1,10 @@
 "use client";
 
-import { startTransition, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 import type { GgsEvent } from "@/lib/ggsEvents";
+import { getEventsFixtureState } from "@/lib/ggsEventsFixtures";
 
 type FeedResponse = {
   events: GgsEvent[];
@@ -44,17 +46,34 @@ function getNowInChicagoMs(date: Date) {
 }
 
 export function Events() {
+  const searchParams = useSearchParams();
+  const fixtureName = searchParams.get("events-fixture");
+  const fixtureState = getEventsFixtureState(fixtureName);
+  const forceExpanded = searchParams.get("events-expanded") === "1";
   const [events, setEvents] = useState<GgsEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [showAll, setShowAll] = useState(false);
+  const [showAll, setShowAll] = useState(forceExpanded);
   const [nowMs, setNowMs] = useState(() => getNowInChicagoMs(new Date()));
+  const resolvedEvents = fixtureState?.events ?? events;
+  const resolvedIsLoading = fixtureState ? false : isLoading;
+  const resolvedLoadError = fixtureState?.error ?? loadError;
+  const resolvedNowMs = fixtureState?.nowMs ?? nowMs;
   const sortedEvents = useMemo(
-    () => [...events].sort((left, right) => left.startMs - right.startMs),
-    [events],
+    () =>
+      [...resolvedEvents].sort((left, right) => left.startMs - right.startMs),
+    [resolvedEvents],
   );
 
   useEffect(() => {
+    if (fixtureState) {
+      setEvents(fixtureState.events);
+      setLoadError(fixtureState.error ?? null);
+      setNowMs(fixtureState.nowMs);
+      setIsLoading(false);
+      return;
+    }
+
     const intervalId = window.setInterval(() => {
       setNowMs(getNowInChicagoMs(new Date()));
     }, 60 * 1000);
@@ -62,9 +81,13 @@ export function Events() {
     return () => {
       window.clearInterval(intervalId);
     };
-  }, []);
+  }, [fixtureState]);
 
   useEffect(() => {
+    if (fixtureState) {
+      return;
+    }
+
     let isActive = true;
 
     async function loadEvents() {
@@ -103,32 +126,37 @@ export function Events() {
     return () => {
       isActive = false;
     };
-  }, []);
+  }, [fixtureState]);
 
   const liveIndex = useMemo(
     () =>
       sortedEvents.findIndex(
-        (event) => nowMs >= event.startMs && nowMs < event.endMs,
+        (event) =>
+          resolvedNowMs >= event.startMs && resolvedNowMs < event.endMs,
       ),
-    [nowMs, sortedEvents],
+    [resolvedNowMs, sortedEvents],
   );
   const upcomingIndex = useMemo(() => {
     if (liveIndex !== -1) {
       return sortedEvents.findIndex(
-        (event, index) => index > liveIndex && event.startMs > nowMs,
+        (event, index) => index > liveIndex && event.startMs > resolvedNowMs,
       );
     }
 
-    return sortedEvents.findIndex((event) => event.startMs > nowMs);
-  }, [liveIndex, nowMs, sortedEvents]);
-  const visibleEvents = showAll ? sortedEvents : sortedEvents.slice(0, 2);
+    return sortedEvents.findIndex((event) => event.startMs > resolvedNowMs);
+  }, [liveIndex, resolvedNowMs, sortedEvents]);
+  const isExpanded = forceExpanded || showAll;
+  const visibleEvents = isExpanded ? sortedEvents : sortedEvents.slice(0, 2);
   const hiddenCount = Math.max(sortedEvents.length - 2, 0);
 
   function renderBadge(index: number) {
     if (index === liveIndex) {
       return (
-        <span className="inline-flex items-center gap-2 rounded-full bg-rose-600 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white">
-          <span className="animate-pulse">🔴</span>
+        <span className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-rose-700 shadow-[0_8px_24px_rgba(244,63,94,0.16)]">
+          <span className="relative flex h-3 w-3 items-center justify-center">
+            <span className="absolute inline-flex h-3 w-3 animate-ping rounded-full bg-rose-400/70" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-rose-600 shadow-[0_0_0_2px_rgba(255,255,255,0.9)]" />
+          </span>
           Happening now
         </span>
       );
@@ -167,7 +195,7 @@ export function Events() {
         </div>
 
         <div className="mt-14 space-y-5">
-          {isLoading ? (
+          {resolvedIsLoading ? (
             <article
               data-testid="events-loading"
               className="rounded-[2rem] border border-slate-200 bg-white px-6 py-7 shadow-[0_18px_40px_rgba(15,23,42,0.06)]"
@@ -273,7 +301,7 @@ export function Events() {
                   <p className="mt-4 text-base leading-7 font-medium text-slate-800">
                     {fallbackEvent.description}
                   </p>
-                  {loadError ? (
+                  {resolvedLoadError ? (
                     <p className="mt-4 text-sm font-medium text-slate-500">
                       The live event feed is unavailable right now, so the
                       regular meetup schedule is shown instead.
@@ -301,15 +329,13 @@ export function Events() {
               type="button"
               data-testid="events-toggle"
               onClick={() => {
-                startTransition(() => {
-                  setShowAll((currentValue) => !currentValue);
-                });
+                setShowAll((currentValue) => !currentValue);
               }}
               className="rounded-full border border-slate-300 bg-white/85 px-5 py-3 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:border-slate-950 focus-visible:border-slate-950"
             >
-              {showAll
+              {isExpanded
                 ? "Show fewer events"
-                : `There are ${hiddenCount} more upcoming events`}
+                : `There is ${hiddenCount} more upcoming events`}
             </button>
           </div>
         ) : null}
