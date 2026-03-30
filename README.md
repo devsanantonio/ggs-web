@@ -37,6 +37,14 @@ NEXT_PUBLIC_SITE_URL=https://your-production-domain.example
 
 If `NEXT_PUBLIC_SITE_URL` is not set, metadata falls back to `http://localhost:3000`.
 
+Optional environment variable for the DEVSA-compatible event feed origin:
+
+```bash
+GGS_EVENTS_FEED_ORIGIN=http://localhost:4000
+```
+
+If `GGS_EVENTS_FEED_ORIGIN` is not set, the events section fetches the published feed from `https://www.devsa.community/api/events/feed`.
+
 ## Project docs
 
 - [Docs index](/Users/zaq/Documents/projects/working/ggs-web/docs/README.md)

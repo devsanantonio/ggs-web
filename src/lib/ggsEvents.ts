@@ -1,6 +1,20 @@
-const FEED_URL = "https://www.devsa.community/api/events/feed";
 const DEFAULT_EVENT_DURATION_MS = 2 * 60 * 60 * 1000;
 const CHICAGO_TIME_ZONE = "America/Chicago";
+const DEFAULT_FEED_ORIGIN = "https://www.devsa.community";
+const GGS_COMMUNITY_ID = "greater-gaming-society";
+
+function getFeedOrigin() {
+  const configuredOrigin =
+    process.env.GGS_EVENTS_FEED_ORIGIN?.trim() || DEFAULT_FEED_ORIGIN;
+
+  return configuredOrigin.endsWith("/")
+    ? configuredOrigin.slice(0, -1)
+    : configuredOrigin;
+}
+
+function getFeedUrl() {
+  return `${getFeedOrigin()}/api/events/feed?communityId=${GGS_COMMUNITY_ID}`;
+}
 
 export type GgsEvent = {
   title: string;
@@ -17,17 +31,14 @@ export type GgsEvent = {
 
 type ParsedFeedItem = {
   title: string;
-  link: string;
+  detailsUrl: string;
   description: string;
-  category: string;
-};
-
-type ParsedDescription = {
-  dateTimeText: string;
-  location: string;
-  format: string;
-  hostedBy: string;
-  details: string;
+  eventType: string;
+  eventStart: string;
+  eventEnd: string;
+  eventTimezone: string;
+  locationLabel: string;
+  hosts: Array<{ id: string; name: string }>;
 };
 
 function decodeXmlEntities(value: string) {
@@ -46,53 +57,51 @@ function extractTagValue(xml: string, tagName: string) {
   return match ? decodeXmlEntities(match[1].trim()) : "";
 }
 
+function extractRepeatedTagValues(xml: string, tagName: string) {
+  return [
+    ...xml.matchAll(new RegExp(`<${tagName}>([\\s\\S]*?)</${tagName}>`, "g")),
+  ]
+    .map((match) => decodeXmlEntities(match[1].trim()))
+    .filter(Boolean);
+}
+
+function extractHosts(xml: string) {
+  return [
+    ...xml.matchAll(
+      /<devsa:host(?:\s+id="([^"]*)")?>([\s\S]*?)<\/devsa:host>/g,
+    ),
+  ]
+    .map((match) => ({
+      id: decodeXmlEntities(match[1]?.trim() ?? ""),
+      name: decodeXmlEntities(match[2].trim()),
+    }))
+    .filter((host) => host.name);
+}
+
 function parseFeedItems(feedXml: string) {
   return [...feedXml.matchAll(/<item>([\s\S]*?)<\/item>/g)].map((match) => {
     const itemXml = match[1];
 
     return {
       title: extractTagValue(itemXml, "title"),
-      link: extractTagValue(itemXml, "link"),
-      description: extractTagValue(itemXml, "description"),
-      category: extractTagValue(itemXml, "category"),
+      detailsUrl:
+        extractTagValue(itemXml, "devsa:detailsUrl") ||
+        extractTagValue(itemXml, "link"),
+      description:
+        extractTagValue(itemXml, "devsa:description") ||
+        extractTagValue(itemXml, "description"),
+      eventType: extractTagValue(itemXml, "devsa:eventType"),
+      eventStart: extractTagValue(itemXml, "devsa:eventStart"),
+      eventEnd: extractTagValue(itemXml, "devsa:eventEnd"),
+      eventTimezone:
+        extractTagValue(itemXml, "devsa:eventTimezone") || CHICAGO_TIME_ZONE,
+      locationLabel:
+        extractTagValue(itemXml, "devsa:locationLabel") ||
+        extractRepeatedTagValues(itemXml, "category")[0] ||
+        "San Antonio, Texas",
+      hosts: extractHosts(itemXml),
     } satisfies ParsedFeedItem;
   });
-}
-
-function parseDescription(description: string): ParsedDescription | null {
-  const segments = description.split(" · ");
-
-  if (segments.length < 5) {
-    return null;
-  }
-
-  const [dateTimeText, location, formatSegment, hostedBySegment, ...details] =
-    segments;
-
-  return {
-    dateTimeText: dateTimeText.trim(),
-    location: location.trim(),
-    format: formatSegment.replace(/^Format:\s*/, "").trim(),
-    hostedBy: hostedBySegment.replace(/^Hosted by\s*/, "").trim(),
-    details: details.join(" · ").trim(),
-  };
-}
-
-function monthNameToIndex(monthName: string) {
-  return [
-    "january",
-    "february",
-    "march",
-    "april",
-    "may",
-    "june",
-    "july",
-    "august",
-    "september",
-    "october",
-    "november",
-    "december",
-  ].indexOf(monthName.toLowerCase());
 }
 
 function getWallClockMs(
@@ -103,80 +112,6 @@ function getWallClockMs(
   minute: number,
 ) {
   return Date.UTC(year, monthIndex, day, hour, minute);
-}
-
-function parseEventDateTime(dateTimeText: string) {
-  const match = dateTimeText.match(
-    /^[A-Za-z]+,\s+([A-Za-z]+)\s+(\d{1,2}),\s+(\d{4})\s+at\s+(\d{1,2}):(\d{2})\s+(AM|PM)(?:\s*[-–]\s*(\d{1,2}):(\d{2})\s+(AM|PM))?\s+CT$/,
-  );
-
-  if (!match) {
-    return null;
-  }
-
-  const [
-    ,
-    monthName,
-    dayText,
-    yearText,
-    startHourText,
-    startMinuteText,
-    startMeridiem,
-    endHourText,
-    endMinuteText,
-    endMeridiem,
-  ] = match;
-  const monthIndex = monthNameToIndex(monthName);
-
-  if (monthIndex === -1) {
-    return null;
-  }
-
-  const year = Number(yearText);
-  const day = Number(dayText);
-  const startMinute = Number(startMinuteText);
-  const rawStartHour = Number(startHourText) % 12;
-  const startHour = rawStartHour + (startMeridiem === "PM" ? 12 : 0);
-  const startMs = getWallClockMs(year, monthIndex, day, startHour, startMinute);
-  let endMs = startMs + DEFAULT_EVENT_DURATION_MS;
-
-  if (endHourText && endMinuteText && endMeridiem) {
-    const rawEndHour = Number(endHourText) % 12;
-    const endHour = rawEndHour + (endMeridiem === "PM" ? 12 : 0);
-
-    endMs = getWallClockMs(
-      year,
-      monthIndex,
-      day,
-      endHour,
-      Number(endMinuteText),
-    );
-    if (endMs <= startMs) {
-      endMs += 24 * 60 * 60 * 1000;
-    }
-  }
-
-  const surrogateDate = new Date(startMs);
-  const endSurrogateDate = new Date(endMs);
-  const dateLabel = new Intl.DateTimeFormat("en-US", {
-    timeZone: "UTC",
-    weekday: "short",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  }).format(surrogateDate);
-  const timeFormatter = new Intl.DateTimeFormat("en-US", {
-    timeZone: "UTC",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-
-  return {
-    startMs,
-    endMs,
-    dateLabel,
-    timeLabel: `${timeFormatter.format(surrogateDate)} - ${timeFormatter.format(endSurrogateDate)}`,
-  };
 }
 
 function getChicagoNowMs(now: Date) {
@@ -202,8 +137,51 @@ function getChicagoNowMs(now: Date) {
   );
 }
 
+function parseEventTimeMs(isoDateTime: string) {
+  const parsedMs = Date.parse(isoDateTime);
+
+  return Number.isNaN(parsedMs) ? null : parsedMs;
+}
+
+function formatEventLabels(startMs: number, endMs: number, timeZone: string) {
+  const startDate = new Date(startMs);
+  const endDate = new Date(endMs);
+
+  return {
+    dateLabel: new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      weekday: "short",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    }).format(startDate),
+    timeLabel: `${new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(startDate)} - ${new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(endDate)}`,
+  };
+}
+
+function toFormatLabel(eventType: string) {
+  switch (eventType) {
+    case "in-person":
+      return "In-Person";
+    case "hybrid":
+      return "Hybrid";
+    case "virtual":
+      return "Virtual";
+    default:
+      return "Community event";
+  }
+}
+
 export async function getUpcomingGgsEvents() {
-  const response = await fetch(FEED_URL, {
+  const response = await fetch(getFeedUrl(), {
     next: { revalidate: 60 * 30 },
   });
 
@@ -215,34 +193,30 @@ export async function getUpcomingGgsEvents() {
   const nowMs = getChicagoNowMs(new Date());
 
   return parseFeedItems(feedXml)
+    .filter((item) => item.hosts.some((host) => host.id === GGS_COMMUNITY_ID))
     .map((item) => {
-      const parsedDescription = parseDescription(item.description);
+      const startMs = parseEventTimeMs(item.eventStart);
 
-      if (!parsedDescription) {
+      if (startMs === null) {
         return null;
       }
 
-      if (!parsedDescription.hostedBy.includes("Greater Gaming Society")) {
-        return null;
-      }
-
-      const parsedDateTime = parseEventDateTime(parsedDescription.dateTimeText);
-
-      if (!parsedDateTime) {
-        return null;
-      }
+      const endMs =
+        parseEventTimeMs(item.eventEnd) ?? startMs + DEFAULT_EVENT_DURATION_MS;
+      const timeZone = item.eventTimezone || CHICAGO_TIME_ZONE;
+      const labels = formatEventLabels(startMs, endMs, timeZone);
 
       return {
         title: item.title,
-        link: item.link,
-        description: parsedDescription.details,
-        location: parsedDescription.location,
-        format: parsedDescription.format || item.category,
-        hostedBy: parsedDescription.hostedBy,
-        startMs: parsedDateTime.startMs,
-        endMs: parsedDateTime.endMs,
-        dateLabel: parsedDateTime.dateLabel,
-        timeLabel: parsedDateTime.timeLabel,
+        link: item.detailsUrl,
+        description: item.description,
+        location: item.locationLabel || "San Antonio, Texas",
+        format: toFormatLabel(item.eventType),
+        hostedBy: item.hosts.map((host) => host.name).join(", "),
+        startMs,
+        endMs,
+        dateLabel: labels.dateLabel,
+        timeLabel: labels.timeLabel,
       } satisfies GgsEvent;
     })
     .filter((event): event is GgsEvent => Boolean(event))
