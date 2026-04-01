@@ -1,7 +1,7 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { GgsEvent, GgsEventsResponse } from "@/lib/ggsEvents";
 import { getEventsFixtureState } from "@/lib/ggsEventsFixtures";
@@ -66,16 +66,22 @@ function getPastToggleLabel(hiddenCount: number) {
 }
 
 export function Events() {
-  const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
+  const sectionRef = useRef<HTMLElement | null>(null);
   const fixtureName = searchParams.get("events-fixture");
   const fixtureState = getEventsFixtureState(fixtureName);
-  const activeTab: EventsTab =
+  const initialTab: EventsTab =
     searchParams.get("events-tab") === "past" ? "past" : "upcoming";
-  const showAllUpcoming = searchParams.get("events-expanded") === "1";
-  const visiblePastCount =
+  const initialShowAllUpcoming = searchParams.get("events-expanded") === "1";
+  const initialVisiblePastCount =
     Number(searchParams.get("past-count")) || INITIAL_PAST_VISIBLE_COUNT;
+  const [activeTab, setActiveTab] = useState<EventsTab>(initialTab);
+  const [showAllUpcoming, setShowAllUpcoming] = useState(
+    initialShowAllUpcoming,
+  );
+  const [visiblePastCount, setVisiblePastCount] = useState(
+    initialVisiblePastCount,
+  );
   const [upcomingEvents, setUpcomingEvents] = useState<GgsEvent[]>([]);
   const [pastEvents, setPastEvents] = useState<GgsEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -195,22 +201,12 @@ export function Events() {
     sortedPastEvents.length - visiblePastEvents.length,
     0,
   );
+  const isPastExpanded = visiblePastCount > INITIAL_PAST_VISIBLE_COUNT;
 
-  function updateEventsQuery(updates: Record<string, string | null>) {
-    const nextSearchParams = new URLSearchParams(searchParams.toString());
-
-    for (const [key, value] of Object.entries(updates)) {
-      if (value === null) {
-        nextSearchParams.delete(key);
-      } else {
-        nextSearchParams.set(key, value);
-      }
-    }
-
-    const nextQuery = nextSearchParams.toString();
-
-    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
-      scroll: false,
+  function scrollToEventsTop() {
+    sectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
     });
   }
 
@@ -309,6 +305,7 @@ export function Events() {
   return (
     <section
       id="events"
+      ref={sectionRef}
       className="relative scroll-mt-16 border-y border-black/5 bg-[linear-gradient(180deg,#fffdf7_0%,#f5fbf6_100%)]"
     >
       <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[linear-gradient(180deg,rgba(255,255,255,0.7),transparent)]" />
@@ -337,11 +334,8 @@ export function Events() {
             aria-selected={activeTab === "upcoming"}
             data-testid="events-tab-upcoming"
             onClick={() => {
-              updateEventsQuery({
-                "events-tab": null,
-                "events-expanded": null,
-                "past-count": null,
-              });
+              setActiveTab("upcoming");
+              setShowAllUpcoming(initialShowAllUpcoming);
             }}
             className={`rounded-full px-5 py-3 text-sm font-semibold transition ${
               activeTab === "upcoming"
@@ -357,11 +351,8 @@ export function Events() {
             aria-selected={activeTab === "past"}
             data-testid="events-tab-past"
             onClick={() => {
-              updateEventsQuery({
-                "events-tab": "past",
-                "events-expanded": null,
-                "past-count": String(INITIAL_PAST_VISIBLE_COUNT),
-              });
+              setActiveTab("past");
+              setVisiblePastCount(initialVisiblePastCount);
             }}
             className={`rounded-full px-5 py-3 text-sm font-semibold transition ${
               activeTab === "past"
@@ -462,8 +453,12 @@ export function Events() {
               type="button"
               data-testid="events-toggle"
               onClick={() => {
-                updateEventsQuery({
-                  "events-expanded": showAllUpcoming ? null : "1",
+                setShowAllUpcoming((currentValue) => {
+                  if (currentValue) {
+                    window.setTimeout(scrollToEventsTop, 0);
+                  }
+
+                  return !currentValue;
                 });
               }}
               className="rounded-full border border-slate-300 bg-white/85 px-5 py-3 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:border-slate-950 focus-visible:border-slate-950"
@@ -475,20 +470,37 @@ export function Events() {
           </div>
         ) : null}
 
-        {activeTab === "past" && hiddenPastCount > 0 ? (
+        {activeTab === "past" && (hiddenPastCount > 0 || isPastExpanded) ? (
           <div className="mt-8">
-            <button
-              type="button"
-              data-testid="past-events-toggle"
-              onClick={() => {
-                updateEventsQuery({
-                  "past-count": String(visiblePastCount + PAST_INCREMENT_COUNT),
-                });
-              }}
-              className="rounded-full border border-slate-300 bg-white/85 px-5 py-3 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:border-slate-950 focus-visible:border-slate-950"
-            >
-              {getPastToggleLabel(hiddenPastCount)}
-            </button>
+            <div className="flex flex-wrap gap-3">
+              {hiddenPastCount > 0 ? (
+                <button
+                  type="button"
+                  data-testid="past-events-toggle"
+                  onClick={() => {
+                    setVisiblePastCount(
+                      (currentValue) => currentValue + PAST_INCREMENT_COUNT,
+                    );
+                  }}
+                  className="rounded-full border border-slate-300 bg-white/85 px-5 py-3 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:border-slate-950 focus-visible:border-slate-950"
+                >
+                  {getPastToggleLabel(hiddenPastCount)}
+                </button>
+              ) : null}
+              {isPastExpanded ? (
+                <button
+                  type="button"
+                  data-testid="past-events-collapse"
+                  onClick={() => {
+                    setVisiblePastCount(INITIAL_PAST_VISIBLE_COUNT);
+                    window.setTimeout(scrollToEventsTop, 0);
+                  }}
+                  className="rounded-full border border-slate-300 bg-white/85 px-5 py-3 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:border-slate-950 focus-visible:border-slate-950"
+                >
+                  Show fewer events
+                </button>
+              ) : null}
+            </div>
           </div>
         ) : null}
       </div>
