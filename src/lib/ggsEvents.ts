@@ -3,19 +3,6 @@ const CHICAGO_TIME_ZONE = "America/Chicago";
 const DEFAULT_FEED_ORIGIN = "https://www.devsa.community";
 const GGS_COMMUNITY_ID = "greater-gaming-society";
 
-function getFeedOrigin() {
-  const configuredOrigin =
-    process.env.GGS_EVENTS_FEED_ORIGIN?.trim() || DEFAULT_FEED_ORIGIN;
-
-  return configuredOrigin.endsWith("/")
-    ? configuredOrigin.slice(0, -1)
-    : configuredOrigin;
-}
-
-function getFeedUrl() {
-  return `${getFeedOrigin()}/api/events/feed?communityId=${GGS_COMMUNITY_ID}`;
-}
-
 export type GgsEvent = {
   title: string;
   link: string;
@@ -29,6 +16,11 @@ export type GgsEvent = {
   timeLabel: string;
 };
 
+export type GgsEventsResponse = {
+  upcomingEvents: GgsEvent[];
+  pastEvents: GgsEvent[];
+};
+
 type ParsedFeedItem = {
   title: string;
   detailsUrl: string;
@@ -40,6 +32,22 @@ type ParsedFeedItem = {
   locationLabel: string;
   hosts: Array<{ id: string; name: string }>;
 };
+
+function getFeedOrigin() {
+  const configuredOrigin =
+    process.env.GGS_EVENTS_FEED_ORIGIN?.trim() || DEFAULT_FEED_ORIGIN;
+
+  return configuredOrigin.endsWith("/")
+    ? configuredOrigin.slice(0, -1)
+    : configuredOrigin;
+}
+
+function getFeedUrl(variant: "upcoming" | "past") {
+  const feedPath =
+    variant === "past" ? "/api/events/feed/past" : "/api/events/feed";
+
+  return `${getFeedOrigin()}${feedPath}?communityId=${GGS_COMMUNITY_ID}`;
+}
 
 function decodeXmlEntities(value: string) {
   return value
@@ -180,18 +188,7 @@ function toFormatLabel(eventType: string) {
   }
 }
 
-export async function getUpcomingGgsEvents() {
-  const response = await fetch(getFeedUrl(), {
-    next: { revalidate: 60 * 30 },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch DEVSA feed: ${response.status}`);
-  }
-
-  const feedXml = await response.text();
-  const nowMs = getChicagoNowMs(new Date());
-
+function mapFeedXmlToEvents(feedXml: string) {
   return parseFeedItems(feedXml)
     .filter((item) => item.hosts.some((host) => host.id === GGS_COMMUNITY_ID))
     .map((item) => {
@@ -219,7 +216,36 @@ export async function getUpcomingGgsEvents() {
         timeLabel: labels.timeLabel,
       } satisfies GgsEvent;
     })
-    .filter((event): event is GgsEvent => Boolean(event))
-    .filter((event) => event.endMs >= nowMs)
-    .sort((left, right) => left.startMs - right.startMs);
+    .filter((event): event is GgsEvent => Boolean(event));
+}
+
+async function fetchFeedVariant(variant: "upcoming" | "past") {
+  const response = await fetch(getFeedUrl(variant), {
+    next: { revalidate: 60 * 30 },
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch DEVSA ${variant} feed: ${response.status}`,
+    );
+  }
+
+  return response.text();
+}
+
+export async function getGgsEvents() {
+  const [upcomingFeedXml, pastFeedXml] = await Promise.all([
+    fetchFeedVariant("upcoming"),
+    fetchFeedVariant("past"),
+  ]);
+  const nowMs = getChicagoNowMs(new Date());
+
+  return {
+    upcomingEvents: mapFeedXmlToEvents(upcomingFeedXml)
+      .filter((event) => event.endMs >= nowMs)
+      .sort((left, right) => left.startMs - right.startMs),
+    pastEvents: mapFeedXmlToEvents(pastFeedXml)
+      .filter((event) => event.endMs < nowMs)
+      .sort((left, right) => right.startMs - left.startMs),
+  } satisfies GgsEventsResponse;
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getUpcomingGgsEvents } from "@/lib/ggsEvents";
+import { getGgsEvents } from "@/lib/ggsEvents";
 import { getEventsFixtureState } from "@/lib/ggsEventsFixtures";
 
 export async function GET(request: Request) {
@@ -10,20 +10,22 @@ export async function GET(request: Request) {
 
     if (fixtureState) {
       return NextResponse.json({
-        events: fixtureState.events,
+        upcomingEvents: fixtureState.upcomingEvents,
+        pastEvents: fixtureState.pastEvents,
         error: fixtureState.error,
       });
     }
 
-    const events = await getUpcomingGgsEvents();
+    const events = await getGgsEvents();
 
-    return NextResponse.json({ events });
+    return NextResponse.json(events);
   } catch (error) {
     console.error("Failed to load GGS events from DEVSA feed", error);
 
     return NextResponse.json(
       {
-        events: [],
+        upcomingEvents: [],
+        pastEvents: [],
         error: "Unable to load upcoming events.",
       },
       { status: 200 },

@@ -1,7 +1,8 @@
 import type { GgsEvent } from "@/lib/ggsEvents";
 
 export type EventsFixtureState = {
-  events: GgsEvent[];
+  upcomingEvents: GgsEvent[];
+  pastEvents: GgsEvent[];
   nowMs: number;
   error?: string;
 };
@@ -29,15 +30,16 @@ function createEvent(overrides: Partial<GgsEvent>): GgsEvent {
 const fixtures: Record<string, EventsFixtureState> = {
   single: {
     nowMs: FIXED_NOW_MS,
-    events: [
+    upcomingEvents: [
       createEvent({
         title: "Single Upcoming Event",
       }),
     ],
+    pastEvents: [],
   },
   two: {
     nowMs: FIXED_NOW_MS,
-    events: [
+    upcomingEvents: [
       createEvent({
         title: "Second Event",
         startMs: FIXED_NOW_MS + 4 * 60 * 60 * 1000,
@@ -51,10 +53,11 @@ const fixtures: Record<string, EventsFixtureState> = {
         timeLabel: "7:30 PM - 9:30 PM",
       }),
     ],
+    pastEvents: [],
   },
   more: {
     nowMs: FIXED_NOW_MS,
-    events: [
+    upcomingEvents: [
       createEvent({ title: "Event One" }),
       createEvent({
         title: "Event Two",
@@ -67,14 +70,16 @@ const fixtures: Record<string, EventsFixtureState> = {
         endMs: FIXED_NOW_MS + 10 * 60 * 60 * 1000,
       }),
     ],
+    pastEvents: [],
   },
   none: {
     nowMs: FIXED_NOW_MS,
-    events: [],
+    upcomingEvents: [],
+    pastEvents: [],
   },
   live: {
     nowMs: FIXED_NOW_MS,
-    events: [
+    upcomingEvents: [
       createEvent({
         title: "Live Event",
         startMs: FIXED_NOW_MS - 30 * 60 * 1000,
@@ -88,12 +93,86 @@ const fixtures: Record<string, EventsFixtureState> = {
         timeLabel: "9:30 PM - 11:30 PM",
       }),
     ],
+    pastEvents: [],
   },
   clamp: {
     nowMs: FIXED_NOW_MS,
-    events: [
+    upcomingEvents: [
       createEvent({
         title: "Clamped Description Event",
+      }),
+    ],
+    pastEvents: [],
+  },
+  past: {
+    nowMs: FIXED_NOW_MS,
+    upcomingEvents: [],
+    pastEvents: [
+      createEvent({
+        title: "Past Event 1",
+        startMs: FIXED_NOW_MS - 1 * 24 * 60 * 60 * 1000,
+        endMs: FIXED_NOW_MS - 1 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000,
+        dateLabel: "Sun, April 26, 2026",
+      }),
+      createEvent({
+        title: "Past Event 2",
+        startMs: FIXED_NOW_MS - 2 * 24 * 60 * 60 * 1000,
+        endMs: FIXED_NOW_MS - 2 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000,
+        dateLabel: "Sat, April 25, 2026",
+      }),
+      createEvent({
+        title: "Past Event 3",
+        startMs: FIXED_NOW_MS - 3 * 24 * 60 * 60 * 1000,
+        endMs: FIXED_NOW_MS - 3 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000,
+        dateLabel: "Fri, April 24, 2026",
+      }),
+      createEvent({
+        title: "Past Event 4",
+        startMs: FIXED_NOW_MS - 4 * 24 * 60 * 60 * 1000,
+        endMs: FIXED_NOW_MS - 4 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000,
+        dateLabel: "Thu, April 23, 2026",
+      }),
+      createEvent({
+        title: "Past Event 5",
+        startMs: FIXED_NOW_MS - 5 * 24 * 60 * 60 * 1000,
+        endMs: FIXED_NOW_MS - 5 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000,
+        dateLabel: "Wed, April 22, 2026",
+      }),
+      createEvent({
+        title: "Past Event 6",
+        startMs: FIXED_NOW_MS - 6 * 24 * 60 * 60 * 1000,
+        endMs: FIXED_NOW_MS - 6 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000,
+        dateLabel: "Tue, April 21, 2026",
+      }),
+      createEvent({
+        title: "Past Event 7",
+        startMs: FIXED_NOW_MS - 7 * 24 * 60 * 60 * 1000,
+        endMs: FIXED_NOW_MS - 7 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000,
+        dateLabel: "Mon, April 20, 2026",
+      }),
+      createEvent({
+        title: "Past Event 8",
+        startMs: FIXED_NOW_MS - 8 * 24 * 60 * 60 * 1000,
+        endMs: FIXED_NOW_MS - 8 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000,
+        dateLabel: "Sun, April 19, 2026",
+      }),
+      createEvent({
+        title: "Past Event 9",
+        startMs: FIXED_NOW_MS - 9 * 24 * 60 * 60 * 1000,
+        endMs: FIXED_NOW_MS - 9 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000,
+        dateLabel: "Sat, April 18, 2026",
+      }),
+      createEvent({
+        title: "Past Event 10",
+        startMs: FIXED_NOW_MS - 10 * 24 * 60 * 60 * 1000,
+        endMs: FIXED_NOW_MS - 10 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000,
+        dateLabel: "Fri, April 17, 2026",
+      }),
+      createEvent({
+        title: "Past Event 11",
+        startMs: FIXED_NOW_MS - 11 * 24 * 60 * 60 * 1000,
+        endMs: FIXED_NOW_MS - 11 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000,
+        dateLabel: "Thu, April 16, 2026",
       }),
     ],
   },

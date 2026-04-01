@@ -1,15 +1,19 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-import type { GgsEvent } from "@/lib/ggsEvents";
+import type { GgsEvent, GgsEventsResponse } from "@/lib/ggsEvents";
 import { getEventsFixtureState } from "@/lib/ggsEventsFixtures";
 
-type FeedResponse = {
-  events: GgsEvent[];
+type FeedResponse = GgsEventsResponse & {
   error?: string;
 };
+
+type EventsTab = "upcoming" | "past";
+
+const INITIAL_PAST_VISIBLE_COUNT = 2;
+const PAST_INCREMENT_COUNT = 4;
 
 const fallbackEvent = {
   title: "Greater Gaming Society Monthly Meetup",
@@ -45,29 +49,62 @@ function getNowInChicagoMs(date: Date) {
   );
 }
 
+function getUpcomingToggleLabel(hiddenCount: number) {
+  return hiddenCount === 1
+    ? "There is 1 more upcoming event"
+    : `There are ${hiddenCount} more upcoming events`;
+}
+
+function getPastToggleLabel(hiddenCount: number) {
+  if (hiddenCount <= PAST_INCREMENT_COUNT) {
+    return hiddenCount === 1
+      ? "Show 1 more event"
+      : `Show ${hiddenCount} more events`;
+  }
+
+  return `Show ${PAST_INCREMENT_COUNT} more events`;
+}
+
 export function Events() {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const fixtureName = searchParams.get("events-fixture");
   const fixtureState = getEventsFixtureState(fixtureName);
-  const forceExpanded = searchParams.get("events-expanded") === "1";
-  const [events, setEvents] = useState<GgsEvent[]>([]);
+  const activeTab: EventsTab =
+    searchParams.get("events-tab") === "past" ? "past" : "upcoming";
+  const showAllUpcoming = searchParams.get("events-expanded") === "1";
+  const visiblePastCount =
+    Number(searchParams.get("past-count")) || INITIAL_PAST_VISIBLE_COUNT;
+  const [upcomingEvents, setUpcomingEvents] = useState<GgsEvent[]>([]);
+  const [pastEvents, setPastEvents] = useState<GgsEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [showAll, setShowAll] = useState(forceExpanded);
   const [nowMs, setNowMs] = useState(() => getNowInChicagoMs(new Date()));
-  const resolvedEvents = fixtureState?.events ?? events;
+  const resolvedUpcomingEvents = fixtureState?.upcomingEvents ?? upcomingEvents;
+  const resolvedPastEvents = fixtureState?.pastEvents ?? pastEvents;
   const resolvedIsLoading = fixtureState ? false : isLoading;
   const resolvedLoadError = fixtureState?.error ?? loadError;
   const resolvedNowMs = fixtureState?.nowMs ?? nowMs;
-  const sortedEvents = useMemo(
+  const sortedUpcomingEvents = useMemo(
     () =>
-      [...resolvedEvents].sort((left, right) => left.startMs - right.startMs),
-    [resolvedEvents],
+      [...resolvedUpcomingEvents].sort(
+        (left, right) => left.startMs - right.startMs,
+      ),
+    [resolvedUpcomingEvents],
+  );
+  const sortedPastEvents = useMemo(
+    () =>
+      [...resolvedPastEvents].sort(
+        (left, right) => right.startMs - left.startMs,
+      ),
+    [resolvedPastEvents],
   );
 
   useEffect(() => {
     if (fixtureState) {
-      setEvents(fixtureState.events);
+      setUpcomingEvents(fixtureState.upcomingEvents);
+      setPastEvents(fixtureState.pastEvents);
       setLoadError(fixtureState.error ?? null);
       setNowMs(fixtureState.nowMs);
       setIsLoading(false);
@@ -107,7 +144,8 @@ export function Events() {
           return;
         }
 
-        setEvents(payload.events ?? []);
+        setUpcomingEvents(payload.upcomingEvents ?? []);
+        setPastEvents(payload.pastEvents ?? []);
         setLoadError(payload.error ?? null);
         setIsLoading(false);
       } catch {
@@ -115,7 +153,8 @@ export function Events() {
           return;
         }
 
-        setEvents([]);
+        setUpcomingEvents([]);
+        setPastEvents([]);
         setLoadError("Unable to load upcoming events.");
         setIsLoading(false);
       }
@@ -130,26 +169,52 @@ export function Events() {
 
   const liveIndex = useMemo(
     () =>
-      sortedEvents.findIndex(
+      sortedUpcomingEvents.findIndex(
         (event) =>
           resolvedNowMs >= event.startMs && resolvedNowMs < event.endMs,
       ),
-    [resolvedNowMs, sortedEvents],
+    [resolvedNowMs, sortedUpcomingEvents],
   );
   const upcomingIndex = useMemo(() => {
     if (liveIndex !== -1) {
-      return sortedEvents.findIndex(
+      return sortedUpcomingEvents.findIndex(
         (event, index) => index > liveIndex && event.startMs > resolvedNowMs,
       );
     }
 
-    return sortedEvents.findIndex((event) => event.startMs > resolvedNowMs);
-  }, [liveIndex, resolvedNowMs, sortedEvents]);
-  const isExpanded = forceExpanded || showAll;
-  const visibleEvents = isExpanded ? sortedEvents : sortedEvents.slice(0, 2);
-  const hiddenCount = Math.max(sortedEvents.length - 2, 0);
+    return sortedUpcomingEvents.findIndex(
+      (event) => event.startMs > resolvedNowMs,
+    );
+  }, [liveIndex, resolvedNowMs, sortedUpcomingEvents]);
+  const visibleUpcomingEvents = showAllUpcoming
+    ? sortedUpcomingEvents
+    : sortedUpcomingEvents.slice(0, 2);
+  const hiddenUpcomingCount = Math.max(sortedUpcomingEvents.length - 2, 0);
+  const visiblePastEvents = sortedPastEvents.slice(0, visiblePastCount);
+  const hiddenPastCount = Math.max(
+    sortedPastEvents.length - visiblePastEvents.length,
+    0,
+  );
 
-  function renderBadge(index: number) {
+  function updateEventsQuery(updates: Record<string, string | null>) {
+    const nextSearchParams = new URLSearchParams(searchParams.toString());
+
+    for (const [key, value] of Object.entries(updates)) {
+      if (value === null) {
+        nextSearchParams.delete(key);
+      } else {
+        nextSearchParams.set(key, value);
+      }
+    }
+
+    const nextQuery = nextSearchParams.toString();
+
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
+      scroll: false,
+    });
+  }
+
+  function renderUpcomingBadge(index: number) {
     if (index === liveIndex) {
       return (
         <span className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-rose-700 shadow-[0_8px_24px_rgba(244,63,94,0.16)]">
@@ -173,6 +238,74 @@ export function Events() {
     return null;
   }
 
+  function renderEventCard(event: GgsEvent, index: number, tab: EventsTab) {
+    return (
+      <article
+        key={`${tab}-${event.title}-${event.startMs}`}
+        data-testid="event-card"
+        className="group relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white px-6 py-7 shadow-[0_18px_40px_rgba(15,23,42,0.06)] transition duration-300 hover:-translate-y-1 hover:border-slate-950 hover:shadow-[0_24px_55px_rgba(15,23,42,0.11)]"
+      >
+        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-400 via-amber-300 to-sky-400 opacity-0 transition group-hover:opacity-100" />
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0 lg:w-[13rem]">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">
+              {event.dateLabel}
+            </p>
+            <p className="mt-3 text-lg font-semibold text-slate-950">
+              {event.timeLabel}
+            </p>
+            <p className="mt-2 text-sm font-medium text-slate-500">
+              {event.location}
+            </p>
+            <p className="mt-2 text-sm font-medium text-slate-500">
+              {event.format}
+            </p>
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-start gap-3">
+              <h3
+                data-testid="event-title"
+                className="text-2xl font-semibold tracking-tight text-slate-950"
+              >
+                {event.title}
+              </h3>
+              <div data-testid="event-badge">
+                {tab === "upcoming" ? renderUpcomingBadge(index) : null}
+              </div>
+            </div>
+            <p
+              data-testid="event-description"
+              title={event.description}
+              className="mt-4 overflow-hidden text-base leading-7 font-medium text-slate-800"
+              style={{
+                display: "-webkit-box",
+                WebkitBoxOrient: "vertical",
+                WebkitLineClamp: 3,
+              }}
+            >
+              {event.description}
+            </p>
+            <p className="mt-4 text-sm font-medium text-slate-500">
+              Hosted by {event.hostedBy}
+            </p>
+          </div>
+
+          <div className="flex lg:justify-end">
+            <a
+              href={event.link}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex w-fit rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-900 transition group-hover:border-slate-950 group-hover:bg-slate-950 group-hover:text-white focus-visible:border-slate-950 focus-visible:bg-slate-950 focus-visible:text-white"
+            >
+              Event details
+            </a>
+          </div>
+        </div>
+      </article>
+    );
+  }
+
   return (
     <section
       id="events"
@@ -185,13 +318,59 @@ export function Events() {
             Events
           </p>
           <h2 className="mt-5 text-4xl font-semibold tracking-tight text-balance text-slate-950 sm:text-5xl">
-            Upcoming events hosted by Greater Gaming Society.
+            Events hosted by Greater Gaming Society.
           </h2>
           <p className="mt-6 text-lg leading-8 font-medium text-slate-800">
-            The list below pulls GGS-hosted events from the DEVSA community
-            calendar and falls back to the regular meetup schedule when nothing
-            is currently listed.
+            Browse what is coming up next, or look back through the recent GGS
+            event archive from the DEVSA community calendar.
           </p>
+        </div>
+
+        <div
+          className="mt-10 flex flex-wrap gap-3"
+          role="tablist"
+          aria-label="Events tabs"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "upcoming"}
+            data-testid="events-tab-upcoming"
+            onClick={() => {
+              updateEventsQuery({
+                "events-tab": null,
+                "events-expanded": null,
+                "past-count": null,
+              });
+            }}
+            className={`rounded-full px-5 py-3 text-sm font-semibold transition ${
+              activeTab === "upcoming"
+                ? "bg-slate-950 text-white shadow-[0_12px_30px_rgba(15,23,42,0.12)]"
+                : "border border-slate-300 bg-white/85 text-slate-900 hover:border-slate-950"
+            }`}
+          >
+            Upcoming
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "past"}
+            data-testid="events-tab-past"
+            onClick={() => {
+              updateEventsQuery({
+                "events-tab": "past",
+                "events-expanded": null,
+                "past-count": String(INITIAL_PAST_VISIBLE_COUNT),
+              });
+            }}
+            className={`rounded-full px-5 py-3 text-sm font-semibold transition ${
+              activeTab === "past"
+                ? "bg-slate-950 text-white shadow-[0_12px_30px_rgba(15,23,42,0.12)]"
+                : "border border-slate-300 bg-white/85 text-slate-900 hover:border-slate-950"
+            }`}
+          >
+            Past events
+          </button>
         </div>
 
         <div className="mt-14 space-y-5">
@@ -201,141 +380,114 @@ export function Events() {
               className="rounded-[2rem] border border-slate-200 bg-white px-6 py-7 shadow-[0_18px_40px_rgba(15,23,42,0.06)]"
             >
               <p className="text-base font-medium text-slate-700">
-                Checking the upcoming DEVSA calendar for Greater Gaming Society
-                events.
+                Checking the DEVSA calendar for Greater Gaming Society events.
               </p>
             </article>
-          ) : visibleEvents.length > 0 ? (
-            visibleEvents.map((event, index) => (
+          ) : activeTab === "upcoming" ? (
+            visibleUpcomingEvents.length > 0 ? (
+              visibleUpcomingEvents.map((event, index) =>
+                renderEventCard(event, index, "upcoming"),
+              )
+            ) : (
               <article
-                key={`${event.title}-${event.startMs}`}
-                data-testid="event-card"
-                className="group relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white px-6 py-7 shadow-[0_18px_40px_rgba(15,23,42,0.06)] transition duration-300 hover:-translate-y-1 hover:border-slate-950 hover:shadow-[0_24px_55px_rgba(15,23,42,0.11)]"
+                data-testid="events-fallback"
+                className="rounded-[2rem] border border-slate-200 bg-white px-6 py-7 shadow-[0_18px_40px_rgba(15,23,42,0.06)]"
               >
-                <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-400 via-amber-300 to-sky-400 opacity-0 transition group-hover:opacity-100" />
                 <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="min-w-0 lg:w-[13rem]">
+                  <div className="lg:w-[13rem]">
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">
-                      {event.dateLabel}
+                      {fallbackEvent.dateLabel}
                     </p>
                     <p className="mt-3 text-lg font-semibold text-slate-950">
-                      {event.timeLabel}
+                      {fallbackEvent.timeLabel}
                     </p>
                     <p className="mt-2 text-sm font-medium text-slate-500">
-                      {event.location}
+                      {fallbackEvent.location}
                     </p>
                     <p className="mt-2 text-sm font-medium text-slate-500">
-                      {event.format}
+                      {fallbackEvent.format}
                     </p>
                   </div>
-
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-start gap-3">
-                      <h3
-                        data-testid="event-title"
-                        className="text-2xl font-semibold tracking-tight text-slate-950"
-                      >
-                        {event.title}
+                      <h3 className="text-2xl font-semibold tracking-tight text-slate-950">
+                        {fallbackEvent.title}
                       </h3>
-                      <div data-testid="event-badge">{renderBadge(index)}</div>
+                      <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-800">
+                        Upcoming
+                      </span>
                     </div>
-                    <p
-                      data-testid="event-description"
-                      title={event.description}
-                      className="mt-4 overflow-hidden text-base leading-7 font-medium text-slate-800"
-                      style={{
-                        display: "-webkit-box",
-                        WebkitBoxOrient: "vertical",
-                        WebkitLineClamp: 3,
-                      }}
-                    >
-                      {event.description}
+                    <p className="mt-4 text-base leading-7 font-medium text-slate-800">
+                      {fallbackEvent.description}
                     </p>
-                    <p className="mt-4 text-sm font-medium text-slate-500">
-                      Hosted by {event.hostedBy}
-                    </p>
+                    {resolvedLoadError ? (
+                      <p className="mt-4 text-sm font-medium text-slate-500">
+                        The live event feed is unavailable right now, so the
+                        regular meetup schedule is shown instead.
+                      </p>
+                    ) : null}
                   </div>
-
                   <div className="flex lg:justify-end">
                     <a
-                      href={event.link}
+                      href={fallbackEvent.link}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex w-fit rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-900 transition group-hover:border-slate-950 group-hover:bg-slate-950 group-hover:text-white focus-visible:border-slate-950 focus-visible:bg-slate-950 focus-visible:text-white"
+                      className="inline-flex w-fit rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:border-slate-950 hover:bg-slate-950 hover:text-white focus-visible:border-slate-950 focus-visible:bg-slate-950 focus-visible:text-white"
                     >
-                      Event details
+                      Join on Meetup
                     </a>
                   </div>
                 </div>
               </article>
-            ))
+            )
+          ) : visiblePastEvents.length > 0 ? (
+            visiblePastEvents.map((event, index) =>
+              renderEventCard(event, index, "past"),
+            )
           ) : (
             <article
-              data-testid="events-fallback"
+              data-testid="events-empty-past"
               className="rounded-[2rem] border border-slate-200 bg-white px-6 py-7 shadow-[0_18px_40px_rgba(15,23,42,0.06)]"
             >
-              <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-                <div className="lg:w-[13rem]">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">
-                    {fallbackEvent.dateLabel}
-                  </p>
-                  <p className="mt-3 text-lg font-semibold text-slate-950">
-                    {fallbackEvent.timeLabel}
-                  </p>
-                  <p className="mt-2 text-sm font-medium text-slate-500">
-                    {fallbackEvent.location}
-                  </p>
-                  <p className="mt-2 text-sm font-medium text-slate-500">
-                    {fallbackEvent.format}
-                  </p>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-start gap-3">
-                    <h3 className="text-2xl font-semibold tracking-tight text-slate-950">
-                      {fallbackEvent.title}
-                    </h3>
-                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-800">
-                      Upcoming
-                    </span>
-                  </div>
-                  <p className="mt-4 text-base leading-7 font-medium text-slate-800">
-                    {fallbackEvent.description}
-                  </p>
-                  {resolvedLoadError ? (
-                    <p className="mt-4 text-sm font-medium text-slate-500">
-                      The live event feed is unavailable right now, so the
-                      regular meetup schedule is shown instead.
-                    </p>
-                  ) : null}
-                </div>
-                <div className="flex lg:justify-end">
-                  <a
-                    href={fallbackEvent.link}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex w-fit rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:border-slate-950 hover:bg-slate-950 hover:text-white focus-visible:border-slate-950 focus-visible:bg-slate-950 focus-visible:text-white"
-                  >
-                    Join on Meetup
-                  </a>
-                </div>
-              </div>
+              <p className="text-base font-medium text-slate-700">
+                No past GGS events are available in the archive yet.
+              </p>
             </article>
           )}
         </div>
 
-        {hiddenCount > 0 ? (
+        {activeTab === "upcoming" && hiddenUpcomingCount > 0 ? (
           <div className="mt-8">
             <button
               type="button"
               data-testid="events-toggle"
               onClick={() => {
-                setShowAll((currentValue) => !currentValue);
+                updateEventsQuery({
+                  "events-expanded": showAllUpcoming ? null : "1",
+                });
               }}
               className="rounded-full border border-slate-300 bg-white/85 px-5 py-3 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:border-slate-950 focus-visible:border-slate-950"
             >
-              {isExpanded
+              {showAllUpcoming
                 ? "Show fewer events"
-                : `There is ${hiddenCount} more upcoming events`}
+                : getUpcomingToggleLabel(hiddenUpcomingCount)}
+            </button>
+          </div>
+        ) : null}
+
+        {activeTab === "past" && hiddenPastCount > 0 ? (
+          <div className="mt-8">
+            <button
+              type="button"
+              data-testid="past-events-toggle"
+              onClick={() => {
+                updateEventsQuery({
+                  "past-count": String(visiblePastCount + PAST_INCREMENT_COUNT),
+                });
+              }}
+              className="rounded-full border border-slate-300 bg-white/85 px-5 py-3 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:border-slate-950 focus-visible:border-slate-950"
+            >
+              {getPastToggleLabel(hiddenPastCount)}
             </button>
           </div>
         ) : null}
